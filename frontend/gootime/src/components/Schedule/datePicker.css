@@ -1,0 +1,70 @@
+/* ._3n.FC:hover {
+    background-color:#0073CC;
+  }
+  
+._3n.FC._1g:hover{
+background-color:#0073CC;
+
+} */
+
+/* Default background color */
+
+.dM{
+  padding:10px 0;
+}
+
+.FC{
+  background-color:#FFC727;
+  border-color:#FFC727;
+  box-shadow: 0px 4px 10px rgba(0, 115, 204, 0.26);
+  border-radius: 18px;
+  color:white;
+  .Lx{
+      color:white;
+  }
+}
+
+.FC ._1g{
+  background-color:#FFC727;
+  color: #fff;
+}
+
+.Ez:after{
+  /* left:16px; */
+  display: none;
+}
+
+.WP:after{
+  /* right:16px; */
+  display: none;
+}
+
+._3n:not(.FC):hover {
+/* background: #0073CC; */
+border-radius: 18px;
+}
+
+._3n {
+  position: relative;
+}
+/* 
+._3n::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  background-color: #2A9D8F;
+  border-radius: 50%;
+  transform: translateY(-20%);
+} */
+
+.has-available-times::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  background-color: #2a9d8f;
+  border-radius: 50%;
+  transform: translateY(-20%);
+  /* Additional styles specific to when available times are present */
+}

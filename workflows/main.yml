@@ -1,0 +1,72 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+  AWS_INSTANCE: ${{ secrets.AWS_INSTANCE }}
+  AWS_DESTINATION_PATH: ${{ secrets.AWS_DESTINATION_PATH }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          push: true
+          dockerfile: Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gootime-backend:latest
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend/gootime
+          push: true
+          dockerfile: Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gootime-frontend:latest
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set permissions for private key
+        run: |
+          echo "${{ secrets.AWS_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+      - name: Pull Backend Docker image
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.AWS_INSTANCE }} 'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gootime-backend:latest'
+      - name: Pull Frontend Docker image
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.AWS_INSTANCE }} 'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gootime-frontend:latest'
+      - name: Copy docker-compose.yaml to remote host
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem ./docker-compose.yaml ${{ secrets.AWS_INSTANCE }}:${{ secrets.AWS_DESTINATION_PATH }}
+      - name: SSH into remote host and stop existing containers
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.AWS_INSTANCE }} 'cd ${{ secrets.AWS_DESTINATION_PATH }} && docker rm --force $(docker ps --filter status=exited -q) || true '
+      - name: SSH into remote host and deploy with docker-compose
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.AWS_INSTANCE }} 'cd ${{ secrets.AWS_DESTINATION_PATH }} && docker-compose up -d'
