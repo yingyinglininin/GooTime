@@ -357,7 +357,7 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
         };
 
         const scheduleLinkResponse = await axios.post(
-          "http://localhost:4000/api/1.0.0/schedule/create",
+          "https://www.gootimetw.com/api/1.0.0/schedule/create",
           scheduleData,
           {
             headers: {

@@ -42,7 +42,7 @@ const HomePage = () => {
   const fetchData = async (token) => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/1.0.0/user/name",
+        "https://www.gootimetw.com/api/1.0.0/user/name",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const HomePage = () => {
   const refreshToken = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/1.0.0/user/auth/refresh",
+        "https://www.gootimetw.com/api/1.0.0/user/auth/refresh",
         {
           // Include necessary data for token refresh, if required
         }

@@ -31,7 +31,7 @@ const SharePage = () => {
     const fetchAvailableTime = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/1.0.0/schedule/available/${link}`
+          `https://www.gootimetw.com/api/1.0.0/schedule/available/${link}`
         );
         console.log(response.data);
 
@@ -155,7 +155,7 @@ const SharePage = () => {
 
       // Assuming you have an API endpoint to handle the submission
       const response = await axios.post(
-        "http://localhost:4000/api/1.0.0/schedule/submit",
+        "https://www.gootimetw.com/api/1.0.0/schedule/submit",
         {
           link,
           startTime: format(new Date(selectedTimeSlot), "yyyy-MM-dd HH:mm:ss"),

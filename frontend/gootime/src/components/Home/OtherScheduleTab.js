@@ -10,7 +10,7 @@ const OtherScheduleTab = ({ token }) => {
   useEffect(() => {
     // Fetch other schedule data from the API using Axios
     axios
-      .get("http://localhost:4000/api/1.0.0/schedule/otherSchedule", {
+      .get("https://www.gootimetw.com/api/1.0.0/schedule/otherSchedule", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

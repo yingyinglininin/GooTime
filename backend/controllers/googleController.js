@@ -53,7 +53,7 @@ exports.oauthCallback = async (req, res, next) => {
     await getCalendarLists(req, res);
     const { token } = req;
 
-    res.redirect(`http://localhost:3000/home?token=${token}`);
+    res.redirect(`https://www.gootimetw.com/home?token=${token}`);
   } catch (error) {
     console.error("[Error] google OAuth callback:", error);
     next(new Error("[Error] google OAuth callback"));

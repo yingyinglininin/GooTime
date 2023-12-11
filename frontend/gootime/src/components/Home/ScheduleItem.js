@@ -48,7 +48,7 @@ const ScheduleItem = ({ schedule }) => (
       <div className="absolute top-0 right-1/4 h-full border-r border-dashed border-main-gray border-opacity-50"></div>
       {/* Circle */}
       <div className="absolute right-0 transform -translate-x-1/2 translate-y-1/2 mb-10">
-        <Link to={`http://localhost:3000/preview/${schedule.link}`}>
+        <Link to={`https://www.gootimetw.com/preview/${schedule.link}`}>
           {/* Replace with your actual link */}
           <IoIosArrowDroprightCircle
             className="text-main-gray cursor-pointer hover:text-main-yellow"
