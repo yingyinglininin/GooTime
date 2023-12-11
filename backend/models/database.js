@@ -1,6 +1,8 @@
 const { Sequelize } = require("sequelize");
 const mysql = require("mysql2");
-const config = require("../config/config");
+const path = require("path");
+const configPath = path.resolve(__dirname, "../config/config");
+const config = require(configPath);
 
 const env = process.env.NODE_ENV || "development";
 const dbConfig = config[env];
