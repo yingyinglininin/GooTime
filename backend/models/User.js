@@ -29,6 +29,10 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  token: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 });
 
 User.hasMany(Calendar, { as: "calendars", foreignKey: "userId" });
