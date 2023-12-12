@@ -2,6 +2,7 @@ const { google } = require("googleapis");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
 const { format } = require("date-fns");
+const { User } = require("../models");
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -13,8 +14,6 @@ const calendar = google.calendar({
   version: "v3",
   auth: oauth2Client,
 });
-
-let refreshToken = null;
 
 exports.login = (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
@@ -32,7 +31,8 @@ exports.oauthCallback = async (req, res) => {
   try {
     const { code } = req.query;
     const { tokens } = await oauth2Client.getToken(code);
-    refreshToken = tokens.refresh_token;
+    const { refreshToken } = tokens;
+
     oauth2Client.setCredentials(tokens);
 
     const people = google.people({ version: "v1", auth: oauth2Client });
@@ -45,6 +45,7 @@ exports.oauthCallback = async (req, res) => {
       name: data.names[0].displayName || "",
       email: data.emailAddresses[0].value || "",
       picture: data.photos[0].url || "",
+      token: refreshToken,
     };
 
     req.googleUserData = googleUserData;
@@ -53,7 +54,7 @@ exports.oauthCallback = async (req, res) => {
     await getCalendarLists(req, res);
     const { token } = req;
 
-    res.redirect(`https://www.gootimetw.com/home?token=${token}`);
+    res.redirect(`https://${process.env.DOMAIN_NAME}/home?token=${token}`);
   } catch (error) {
     console.error("[Error] google OAuth callback:", error);
   }
@@ -135,9 +136,7 @@ const createCalendar = async (req, res) => {
 
 exports.getCalendarEvents = async (req, res, next) => {
   try {
-    await oauth2Client.getAccessToken();
-
-    const { daysLater = 7, calendarIds } = req.body;
+    const { id, daysLater = 7, calendarIds } = req.body;
     console.log("Here", calendarIds);
 
     const today = new Date();
@@ -146,8 +145,12 @@ exports.getCalendarEvents = async (req, res, next) => {
 
     const calendarIdArray = calendarIds || [];
 
+    const refreshToken = await getRefreshToken(id);
+
     const allEvents = [];
     for (const calendarId of calendarIdArray) {
+      await oauth2Client.getAccessToken();
+
       oauth2Client.setCredentials({
         refresh_token: refreshToken,
       });
@@ -210,5 +213,22 @@ exports.getCalendarEvents = async (req, res, next) => {
   } catch (error) {
     console.log(error.message);
     next(new Error("[Error] fetching calendar events"));
+  }
+};
+
+const getRefreshToken = async (userId) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    const refreshToken = user ? user.token : null;
+
+    return refreshToken;
+  } catch (error) {
+    console.error("[Error] getRefreshToken:", error);
+    throw error;
   }
 };

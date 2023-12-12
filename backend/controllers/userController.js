@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 exports.userSignIn = async (req, res, next) => {
   try {
     const userData = req.body;
-    let { name, email, picture, provider, role } = userData;
+    let { name, email, picture, provider, role, token } = userData;
 
     const [user] = await User.upsert(
       {
@@ -14,6 +14,7 @@ exports.userSignIn = async (req, res, next) => {
         provider: provider || "google",
         picture: picture,
         role: role || "user",
+        token: token,
       },
       { returning: true }
     );
@@ -25,13 +26,14 @@ exports.userSignIn = async (req, res, next) => {
       provider: user.dataValues.provider,
       picture: user.dataValues.picture,
       role: user.dataValues.role,
+      token: user.dataValues.token,
     };
 
-    const token = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {
+    const jwtToken = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {
       expiresIn: 3600,
     });
 
-    return res.status(200).json({ token, user: userResponse });
+    return res.status(200).json({ token: jwtToken, user: userResponse });
   } catch (error) {
     next(new Error("[Error] create user"));
   }
