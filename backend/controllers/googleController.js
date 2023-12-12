@@ -28,7 +28,7 @@ exports.login = (req, res) => {
   res.redirect(authUrl);
 };
 
-exports.oauthCallback = async (req, res, next) => {
+exports.oauthCallback = async (req, res) => {
   try {
     const { code } = req.query;
     const { tokens } = await oauth2Client.getToken(code);
@@ -56,11 +56,10 @@ exports.oauthCallback = async (req, res, next) => {
     res.redirect(`https://www.gootimetw.com/home?token=${token}`);
   } catch (error) {
     console.error("[Error] google OAuth callback:", error);
-    next(new Error("[Error] google OAuth callback"));
   }
 };
 
-const createUser = async (req, res, next) => {
+const createUser = async (req, res) => {
   try {
     const googleUserData = req.googleUserData;
     const response = await axios.post(
@@ -73,9 +72,8 @@ const createUser = async (req, res, next) => {
     const { id } = userResponse.id;
     req.userId = id;
     req.token = token;
-    next();
   } catch (error) {
-    next(new Error("[Error] post createUser api"));
+    console.error("[Error] post createUser api", error);
   }
 };
 
@@ -98,11 +96,11 @@ const getCalendarLists = async (req, res, next) => {
     req.allCalendarData = allCalendarData;
     await createCalendar(req, res);
   } catch (error) {
-    next(new Error("[Error] fetching calendar list"));
+    console.error("[Error] fetching calendar list", error);
   }
 };
 
-const createCalendar = async (req, res, next) => {
+const createCalendar = async (req, res) => {
   try {
     const allCalendarData = req.allCalendarData;
 
@@ -110,7 +108,6 @@ const createCalendar = async (req, res, next) => {
       `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
       allCalendarData
     );
-    next();
     // const calendarIdsResponse = await axios.get(
     //   `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=85`
     // );
@@ -132,7 +129,7 @@ const createCalendar = async (req, res, next) => {
 
     // return res.status(200).json("Success");
   } catch (error) {
-    next(new Error("[Error] post createUserCalendarList api"));
+    console.error("[Error] post createUserCalendarList api", error);
   }
 };
 
