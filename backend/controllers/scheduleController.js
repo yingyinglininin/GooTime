@@ -149,14 +149,14 @@ const createAvailableTime = async (req, res, next) => {
 
 const fetchCalendarIds = async (userId) => {
   const calendarIdsResponse = await axios.get(
-    `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=${userId}`
+    `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=${userId}`
   );
   return calendarIdsResponse.data.map((entry) => entry.id);
 };
 
 const fetchGoogleCalendarEvents = async (postData) => {
   return axios.post(
-    `http://${process.env.DOMAIN_NAME}/api/auth/google/calendar/events`,
+    `https://${process.env.DOMAIN_NAME}/api/auth/google/calendar/events`,
     postData
   );
 };
@@ -400,7 +400,7 @@ const createSchedule = async (req, res, next) => {
     });
     //${process.env.DOMAIN_NAME}
     res.json({
-      link: `http://localhost:3000/share/${randomLink}`,
+      link: `https://${process.env.DOMAIN_NAME}/share/${randomLink}`,
     });
   } catch (error) {
     console.error("Error creating schedule:", error);

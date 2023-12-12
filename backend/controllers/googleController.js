@@ -6,7 +6,7 @@ const { format } = require("date-fns");
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  `http://${process.env.DOMAIN_NAME}/api/auth/google/callback`
+  `https://${process.env.DOMAIN_NAME}/api/auth/google/callback`
 );
 
 const calendar = google.calendar({
@@ -64,7 +64,7 @@ const createUser = async (req, res, next) => {
   try {
     const googleUserData = req.googleUserData;
     const response = await axios.post(
-      `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/signin`,
+      `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/signin`,
       googleUserData
     );
 
@@ -106,7 +106,7 @@ const createCalendar = async (req, res, next) => {
     const allCalendarData = req.allCalendarData;
 
     const response = await axios.post(
-      `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
+      `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
       allCalendarData
     );
 
