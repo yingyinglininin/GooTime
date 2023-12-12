@@ -73,6 +73,7 @@ const createUser = async (req, res, next) => {
     const { id } = userResponse.id;
     req.userId = id;
     req.token = token;
+    next();
   } catch (error) {
     next(new Error("[Error] post createUser api"));
   }
@@ -109,7 +110,7 @@ const createCalendar = async (req, res, next) => {
       `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
       allCalendarData
     );
-
+    next();
     // const calendarIdsResponse = await axios.get(
     //   `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=85`
     // );
