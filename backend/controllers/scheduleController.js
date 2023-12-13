@@ -29,7 +29,7 @@ const createAvailableTime = async (req, res, next) => {
     const calendarIds = await fetchCalendarIds(id);
 
     const finalDateTime = addDays(
-      parse(finalDate, "yyyy/MM/dd", new Date()),
+      parse(finalDate, ["MM/dd/yyyy", "yyyy/MM/dd"], new Date()),
       1
     );
     const today = new Date();
