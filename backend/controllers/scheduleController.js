@@ -29,11 +29,15 @@ const createAvailableTime = async (req, res, next) => {
     const calendarIds = await fetchCalendarIds(id);
 
     const finalDateTime = addDays(
-      parse(finalDate, "yyyy/MM/dd", new Date()),
+      parse(finalDate, ["MM/dd/yyyy", "yyyy/MM/dd"], new Date()),
       1
     );
+
+    console.log("finalDateTime", finalDateTime);
+
     const today = new Date();
     const daysLater = differenceInDays(finalDateTime, today);
+    console.log("postData", daysLater);
 
     const postData = { id, daysLater, calendarIds };
     console.log("postData", postData);
