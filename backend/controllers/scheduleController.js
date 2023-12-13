@@ -36,6 +36,7 @@ const createAvailableTime = async (req, res, next) => {
     const daysLater = differenceInDays(finalDateTime, today);
 
     const postData = { id, daysLater, calendarIds };
+    console.log("postData", postData);
 
     const googleCalendarEvents = await fetchGoogleCalendarEvents(postData);
     const eventList = googleCalendarEvents.data;
