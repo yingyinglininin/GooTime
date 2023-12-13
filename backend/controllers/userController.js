@@ -24,7 +24,7 @@ exports.userSignIn = async (req, res, next) => {
         picture,
         role: role || "user",
         accessToken,
-        refreshToken,
+        ...(refreshToken && { refreshToken }),
         expiryDate,
       },
       { returning: true }
@@ -37,9 +37,6 @@ exports.userSignIn = async (req, res, next) => {
       provider: user.dataValues.provider,
       picture: user.dataValues.picture,
       role: user.dataValues.role,
-      accessToken: user.dataValues.accessToken,
-      refreshToken: user.dataValues.refreshToken,
-      expiryDate: user.dataValues.expiryDate,
     };
 
     const jwtToken = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {

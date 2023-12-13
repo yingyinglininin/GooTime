@@ -50,7 +50,7 @@ exports.oauthCallback = async (req, res) => {
       email: data.emailAddresses[0].value || "",
       picture: data.photos[0].url || "",
       accessToken: access_token,
-      refreshToken: refresh_token,
+      ...(refresh_token ? { refreshToken: refresh_token } : {}),
       expiryDate: expiry_date,
     };
 
@@ -147,7 +147,7 @@ const createCalendar = async (req, res) => {
 exports.getCalendarEvents = async (req, res, next) => {
   try {
     const { id, daysLater = 7, calendarIds } = req.body;
-    console.log("Here", calendarIds);
+    console.log("Here", req.body);
 
     const today = new Date();
     const maxDate = new Date();
