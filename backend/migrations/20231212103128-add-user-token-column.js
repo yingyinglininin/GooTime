@@ -4,12 +4,19 @@ const { Sequelize, DataTypes } = require("sequelize");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn("Users", "token", {
+    await queryInterface.addColumn("Users", "accessToken", {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+    });
+
+    await queryInterface.addColumn("Users", "refreshToken", {
+      type: DataTypes.STRING,
+      allowNull: false,
     });
   },
+
   down: async (queryInterface, Sequelize) => {
+    await queryInterface.removeColumn("Users", "accessToken");
     await queryInterface.removeColumn("Users", "refreshToken");
   },
 };

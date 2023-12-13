@@ -12,7 +12,7 @@ const Footer = () => {
   };
 
   return (
-    <div className="flex items-center justify-center space-x-20 fixed bottom-0 left-0 right-0 bg-white shadow-2xl p-4 z-50">
+    <div className="flex items-center justify-center space-x-20 fixed bottom-0 left-0 right-0 bg-white shadow-2xl p-2 z-50">
       <HiHome
         size={36}
         className="flex-shrink-0 cursor-pointer hover:scale-110"

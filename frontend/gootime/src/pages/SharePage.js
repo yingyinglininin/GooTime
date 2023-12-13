@@ -191,7 +191,7 @@ const SharePage = () => {
         onTimeSelect={handleTimeSelect}
         availableTimes={availableTimes}
       />
-      <div className="flex flex-row items-start">
+      <div className="flex flex-row items-center">
         {availableTimesForSelectedDay.length === 0 ? (
           <p>No available times for the selected day.</p>
         ) : (

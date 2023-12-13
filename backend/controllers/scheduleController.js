@@ -144,6 +144,7 @@ const createAvailableTime = async (req, res, next) => {
   }
 };
 
+// `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=${userId}`
 const fetchCalendarIds = async (userId) => {
   const calendarIdsResponse = await axios.get(
     `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=${userId}`
@@ -154,6 +155,7 @@ const fetchCalendarIds = async (userId) => {
 const fetchGoogleCalendarEvents = async (postData) => {
   return axios.post(
     `https://${process.env.DOMAIN_NAME}/api/auth/google/calendar/events`,
+    // `http://${process.env.DOMAIN_NAME}/api/auth/google/calendar/events`,
     postData
   );
 };

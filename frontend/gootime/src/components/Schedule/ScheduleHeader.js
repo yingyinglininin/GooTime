@@ -4,7 +4,7 @@ const ScheduleHeader = ({ activeStep, onStepClick }) => {
   const steps = ["Create", "Schedule", "Finish"];
 
   return (
-    <div className="flex justify-center mt-6">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white p-6 flex justify-center">
       {steps.map((step, index) => (
         <React.Fragment key={index}>
           {index > 0 && (

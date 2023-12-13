@@ -11,6 +11,7 @@ const MyScheduleTab = ({ token }) => {
     // Fetch user data from the API using Axios
     axios
       .get("https://www.gootimetw.com/api/1.0.0/schedule/mySchedule", {
+        // .get("http://localhost:4000/api/1.0.0/schedule/mySchedule", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

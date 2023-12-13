@@ -5,16 +5,27 @@ const jwt = require("jsonwebtoken");
 exports.userSignIn = async (req, res, next) => {
   try {
     const userData = req.body;
-    let { name, email, picture, provider, role, token } = userData;
+    let {
+      name,
+      email,
+      picture,
+      provider,
+      role,
+      accessToken,
+      refreshToken,
+      expiryDate,
+    } = userData;
 
     const [user] = await User.upsert(
       {
-        name: name,
-        email: email,
+        name,
+        email,
         provider: provider || "google",
-        picture: picture,
+        picture,
         role: role || "user",
-        token: token,
+        accessToken,
+        refreshToken,
+        expiryDate,
       },
       { returning: true }
     );
@@ -26,7 +37,9 @@ exports.userSignIn = async (req, res, next) => {
       provider: user.dataValues.provider,
       picture: user.dataValues.picture,
       role: user.dataValues.role,
-      token: user.dataValues.token,
+      accessToken: user.dataValues.accessToken,
+      refreshToken: user.dataValues.refreshToken,
+      expiryDate: user.dataValues.expiryDate,
     };
 
     const jwtToken = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {
