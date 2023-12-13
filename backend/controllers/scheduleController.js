@@ -28,13 +28,16 @@ const createAvailableTime = async (req, res, next) => {
     const { id, duration, finalDate, preference } = req.body;
     const calendarIds = await fetchCalendarIds(id);
 
-    const finalDateTime = addDays(
-      parse(finalDate, ["MM/dd/yyyy", "yyyy/MM/dd"], new Date()),
-      1
-    );
+    console.log(req.body);
+    console.log("original finalDate", finalDate);
+    const finalDateTime = new Date(finalDate);
+    finalDateTime.setDate(finalDateTime.getDate() + 1);
+    console.log("setDate finalDateTime", finalDateTime);
 
-    console.log("finalDateTime", finalDateTime);
-
+    // const finalDateTime = addDays(
+    //   parse(finalDate, ["MM/dd/yyyy", "yyyy/MM/dd"], new Date()),
+    //   1
+    // );
     const today = new Date();
     const daysLater = differenceInDays(finalDateTime, today);
     console.log("postData", daysLater);
