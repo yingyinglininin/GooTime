@@ -43,6 +43,7 @@ const HomePage = () => {
     try {
       const response = await axios.get(
         "https://www.gootimetw.com/api/1.0.0/user/name",
+        // "http://localhost:4000/api/1.0.0/user/name",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -71,26 +72,6 @@ const HomePage = () => {
       // }
     }
   };
-
-  // Function to refresh the token
-  const refreshToken = async () => {
-    try {
-      const response = await axios.post(
-        "https://www.gootimetw.com/api/1.0.0/user/auth/refresh",
-        {
-          // Include necessary data for token refresh, if required
-        }
-      );
-      const newToken = response.data.access_token;
-      // Update the localStorage or state with the new token
-      localStorage.setItem("authToken", newToken);
-      return newToken;
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      return null;
-    }
-  };
-
   return (
     <div className="relative">
       <div className="fixed top-0 left-0 right-0 z-50">
@@ -121,7 +102,7 @@ const HomePage = () => {
       </div>
       {/* Content */}
       {!loading ? (
-        <div className="p-4 mt-64 mb-32 overflow-y-auto">
+        <div className="p-4 mt-44 mb-12 overflow-y-auto">
           {selectedTab === "mySchedule" ? (
             <MyScheduleTab token={urlToken} />
           ) : (

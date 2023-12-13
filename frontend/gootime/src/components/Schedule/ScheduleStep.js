@@ -358,6 +358,7 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
 
         const scheduleLinkResponse = await axios.post(
           "https://www.gootimetw.com/api/1.0.0/schedule/create",
+          // "http://localhost:4000/api/1.0.0/schedule/create",
           scheduleData,
           {
             headers: {
@@ -383,7 +384,7 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
   };
 
   return (
-    <div className="h-full flex flex-col pt-4 overflow-hidden">
+    <div className="h-full flex flex-col pt-20 overflow-hidden">
       <Datepicker
         onChange={handleChange}
         value={selectedDate}
@@ -461,7 +462,7 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
         eventClick={(info) => handleEventClick(info)}
       />
       <button
-        className="bg-main-yellow bg-opacity-90 rounded-md h-8 left-4 right-4 mt-4 mb-20 hover:shadow-md hover:bg-opacity-100"
+        className=" bg-main-yellow bg-opacity-90 rounded-md h-10 left-4 right-4 bottom-24 hover:shadow-md hover:bg-opacity-100 mb-16 mt-8"
         onClick={handleFinishClick}
       >
         {loading && <LoadingSpinner />}

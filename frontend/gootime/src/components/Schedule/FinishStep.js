@@ -27,7 +27,7 @@ const FinishStep = ({ shareLink }) => {
   const previewLink = shareLink.replace("/share", "/preview");
 
   return (
-    <div className="mt-10 space-y-4">
+    <div className="space-y-4 mt-24">
       <CheckIcon />
       <div className="flex items-center relative bg-main-yellow bg-opacity-30 border-l-8 border-main-yellow rounded-md pl-2 cursor-pointer hover:border-main-green hover:bg-main-green hover:bg-opacity-30 duration-300 overflow-hidden">
         <div
@@ -46,7 +46,7 @@ const FinishStep = ({ shareLink }) => {
         </span>
       </div>
       <Link to={previewLink}>
-        <button className="fixed bg-main-yellow rounded-md h-8 left-4 right-4 bottom-24 hover:shadow-md">
+        <button className="fixed bg-main-yellow rounded-md h-10 left-4 right-4 bottom-24 hover:shadow-md">
           Preview
         </button>
       </Link>

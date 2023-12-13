@@ -4,6 +4,7 @@ const GoogleLogin = () => {
   const handleSignInWithGoogle = async () => {
     try {
       window.location.href = "https://www.gootimetw.com/api/auth/login";
+      // window.location.href = "http://localhost:4000/api/auth/login";
       console.log("Redirect Success");
     } catch (error) {
       console.error("Redirect Failed");

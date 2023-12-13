@@ -48,7 +48,7 @@ const TimeButtonGroup = ({
     }
 
     return (
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col items-start pl-12 pr-12">
         <div className="flex flex-row items-start p-2">
           <p>{label}</p>
         </div>

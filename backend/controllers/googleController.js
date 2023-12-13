@@ -8,6 +8,7 @@ const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   `https://${process.env.DOMAIN_NAME}/api/auth/google/callback`
+  // `http://${process.env.DOMAIN_NAME}/api/auth/google/callback`
 );
 
 const calendar = google.calendar({
@@ -31,7 +32,10 @@ exports.oauthCallback = async (req, res) => {
   try {
     const { code } = req.query;
     const { tokens } = await oauth2Client.getToken(code);
-    const { refreshToken } = tokens;
+    const { access_token, refresh_token, expiry_date } = tokens;
+    console.log("token", tokens);
+    console.log("access_token", access_token);
+    console.log("refresh_token", refresh_token);
 
     oauth2Client.setCredentials(tokens);
 
@@ -45,7 +49,9 @@ exports.oauthCallback = async (req, res) => {
       name: data.names[0].displayName || "",
       email: data.emailAddresses[0].value || "",
       picture: data.photos[0].url || "",
-      token: refreshToken,
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiryDate: expiry_date,
     };
 
     req.googleUserData = googleUserData;
@@ -55,6 +61,7 @@ exports.oauthCallback = async (req, res) => {
     const { token } = req;
 
     res.redirect(`https://${process.env.DOMAIN_NAME}/home?token=${token}`);
+    // res.redirect(`http://localhost:3000/home?token=${token}`);
   } catch (error) {
     console.error("[Error] google OAuth callback:", error);
   }
@@ -65,6 +72,7 @@ const createUser = async (req, res) => {
     const googleUserData = req.googleUserData;
     const response = await axios.post(
       `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/signin`,
+      // `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/signin`,
       googleUserData
     );
 
@@ -107,6 +115,8 @@ const createCalendar = async (req, res) => {
 
     const response = await axios.post(
       `https://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
+      // `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar`,
+
       allCalendarData
     );
     // const calendarIdsResponse = await axios.get(
@@ -145,16 +155,17 @@ exports.getCalendarEvents = async (req, res, next) => {
 
     const calendarIdArray = calendarIds || [];
 
-    const refreshToken = await getRefreshToken(id);
+    const tokens = await getTokens(id);
+    const { accessToken, refreshToken } = tokens;
+
+    // Set the credentials (access token and refresh token) for the client
+    oauth2Client.setCredentials({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
 
     const allEvents = [];
     for (const calendarId of calendarIdArray) {
-      await oauth2Client.getAccessToken();
-
-      oauth2Client.setCredentials({
-        refresh_token: refreshToken,
-      });
-
       const { data } = await calendar.events.list({
         calendarId,
         timeMin: today.toISOString(),
@@ -211,12 +222,12 @@ exports.getCalendarEvents = async (req, res, next) => {
     console.log(allEvents);
     res.json(allEvents);
   } catch (error) {
-    console.log(error.message);
+    console.error("Error fetching calendar events:", error.message);
     next(new Error("[Error] fetching calendar events"));
   }
 };
 
-const getRefreshToken = async (userId) => {
+const getTokens = async (userId) => {
   try {
     const user = await User.findOne({
       where: {
@@ -224,11 +235,15 @@ const getRefreshToken = async (userId) => {
       },
     });
 
-    const refreshToken = user ? user.token : null;
-
-    return refreshToken;
+    return user
+      ? {
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          expiryDate: user.expiryDate,
+        }
+      : null;
   } catch (error) {
-    console.error("[Error] getRefreshToken:", error);
+    console.error("[Error] getAccessToken:", error);
     throw error;
   }
 };

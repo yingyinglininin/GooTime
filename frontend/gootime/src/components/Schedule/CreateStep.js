@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { MultiSectionDigitalClock } from "@mui/x-date-pickers";
+import { DigitalClock, MultiSectionDigitalClock } from "@mui/x-date-pickers";
 import PreferenceCheckbox from "./PreferenceCheckbox";
 import ScheduleSelector from "./ScheduleSelector";
 import LoadingSpinner from "../LoadingSpinner";
+
 import axios from "axios";
 const { parseISO } = require("date-fns");
 
@@ -78,6 +79,7 @@ const CreateStepComponent = ({ onNextStep }) => {
 
       const availableApiResponse = await axios.post(
         "https://www.gootimetw.com/api/1.0.0/schedule/available",
+        // "http://localhost:4000/api/1.0.0/schedule/available",
         postData,
         {
           headers: {
@@ -100,21 +102,19 @@ const CreateStepComponent = ({ onNextStep }) => {
   };
 
   return (
-    <div className="flex flex-col space-y-2 mt-3">
+    <div className="flex flex-col space-y-2 mt-20 mb-16">
       <label>Event Name</label>
       <input
         type="text"
         name="eventName"
-        className="bg-main-yellow bg-opacity-30 border-l-8 border-main-yellow rounded-md cursor-pointer h-8 pl-2"
+        className="bg-main-yellow bg-opacity-30 border-l-8 border-main-yellow rounded-md cursor-pointer h-10 pl-2 text-lg"
         value={tempEvent.eventName}
         onChange={handleEventNameChange}
       />
 
       <label>How long will it take?</label>
-      <MultiSectionDigitalClock
-        className="mt-4 rounded-md h-28"
-        views={["hours", "minutes"]}
-        timeSteps={{ hours: 1, minutes: 30 }}
+      <DigitalClock
+        className="flex items-center h-full"
         ampm={false}
         value={tempEvent.selectedDuration}
         onChange={handleTimeChange}
@@ -125,7 +125,7 @@ const CreateStepComponent = ({ onNextStep }) => {
       <label>Preference</label>
       <PreferenceCheckbox onPreferenceChange={handlePreferenceChange} />
       <button
-        className="fixed bg-main-yellow bg-opacity-90 rounded-md h-8 left-4 right-4 bottom-24 hover:shadow-md hover:bg-opacity-100"
+        className=" bg-main-yellow bg-opacity-90 rounded-md h-10 left-4 right-4 bottom-24 hover:shadow-md hover:bg-opacity-100"
         onClick={handleScheduleClick}
       >
         {loading && <LoadingSpinner />}
