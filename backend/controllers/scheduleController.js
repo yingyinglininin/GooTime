@@ -19,6 +19,7 @@ const { JWT } = require("google-auth-library");
 const { v4: uuidv4 } = require("uuid");
 const sequelize = require("../models/database");
 const { Sequelize, Op } = require("sequelize");
+const jwt = require("jsonwebtoken");
 
 const GOOGLE_CALENDAR_CLIENT_EMAIL = process.env.GOOGLE_CALENDAR_CLIENT_EMAIL;
 const GOOGLE_CALENDAR_PRIVATE_KEY = process.env.GOOGLE_CALENDAR_PRIVATE_KEY;
@@ -34,10 +35,6 @@ const createAvailableTime = async (req, res, next) => {
     finalDateTime.setDate(finalDateTime.getDate() + 1);
     console.log("setDate finalDateTime", finalDateTime);
 
-    // const finalDateTime = addDays(
-    //   parse(finalDate, ["MM/dd/yyyy", "yyyy/MM/dd"], new Date()),
-    //   1
-    // );
     const today = new Date();
     const daysLater = differenceInDays(finalDateTime, today);
     console.log("postData", daysLater);
@@ -418,6 +415,7 @@ const createSchedule = async (req, res, next) => {
 const getAvailableTimeByLink = async (req, res, next) => {
   try {
     const { link } = req.params;
+    const { token } = req.query;
 
     // Fetch the schedule, associated time slots, and user information by link
     const schedule = await Schedule.findOne({
@@ -439,6 +437,50 @@ const getAvailableTimeByLink = async (req, res, next) => {
       return res.status(404).json({ error: "Schedule not found" });
     }
 
+    const processTimeSlot = schedule.timeSlots
+      .reduce((acc, timeSlot) => {
+        // Assuming you have the generateTimeWindows function defined
+        const generatedTimeWindows = generateTimeWindows(
+          timeSlot.start,
+          timeSlot.end,
+          schedule.duration
+        );
+
+        // Concatenate the generatedTimeWindows to the accumulator array
+        return acc.concat(generatedTimeWindows);
+      }, [])
+      .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+    let finalTimeSlots = processTimeSlot;
+
+    // Check if token is provided
+    if (token) {
+      // Extract user ID from token (you may need to adjust this based on your authentication system)
+
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const userId = decodedToken.id;
+
+      const calendarIds = await fetchCalendarIds(userId);
+
+      const today = new Date();
+      const daysLater = differenceInDays(new Date(schedule.finalDate), today);
+
+      // Fetch Google Calendar events for the user
+      const googleCalendarEventsResponse = await fetchGoogleCalendarEvents({
+        id: userId,
+        daysLater: daysLater,
+        calendarIds: calendarIds,
+      });
+
+      const googleCalendarEvents = googleCalendarEventsResponse.data;
+
+      // Compare Google Calendar events with original user's available time slots
+      finalTimeSlots = compareGoogleCalendarEvents(
+        processTimeSlot,
+        googleCalendarEvents
+      );
+    }
+
     // Process the data as needed
     const processedData = {
       id: schedule.id,
@@ -448,21 +490,7 @@ const getAvailableTimeByLink = async (req, res, next) => {
         name: schedule.users.name,
         picture: schedule.users.picture,
       },
-      timeSlots: schedule.timeSlots
-        .reduce((acc, timeSlot) => {
-          // Assuming you have the generateTimeWindows function defined
-          const generatedTimeWindows = generateTimeWindows(
-            timeSlot.start,
-            timeSlot.end,
-            schedule.duration
-          );
-          console.log(timeSlot);
-          console.log(generatedTimeWindows);
-
-          // Concatenate the generatedTimeWindows to the accumulator array
-          return acc.concat(generatedTimeWindows);
-        }, [])
-        .sort((a, b) => new Date(a.start) - new Date(b.start)),
+      timeSlots: finalTimeSlots,
     };
 
     res.json(processedData);
@@ -507,8 +535,9 @@ function generateTimeWindows(
     );
 
     timeWindows.push({
-      start: startTimeWithDate,
-      end: endTimeWithDate,
+      startTime: startTimeWithDate,
+      endTime: endTimeWithDate,
+      hasOverlap: false,
     });
   }
 
@@ -539,10 +568,34 @@ function addOriginalDate(originalDateTime, time) {
   return `${year}-${month}-${day} ${time}`;
 }
 
+// Compare Google Calendar events with original user's available time slots
+const compareGoogleCalendarEvents = (processedData, googleCalendarEvents) => {
+  console.log("processedData", processedData);
+  console.log("googleCalendarEvents", googleCalendarEvents);
+
+  const markedProcessData = processedData.map((processEvent) => {
+    const { startTime, endTime } = processEvent;
+
+    const hasOverlap = googleCalendarEvents.some(
+      (googleEvent) =>
+        new Date(startTime).getTime() <
+          new Date(googleEvent.endTime).getTime() &&
+        new Date(endTime).getTime() > new Date(googleEvent.startTime).getTime()
+    );
+
+    return {
+      startTime: startTime,
+      endTime: endTime,
+      hasOverlap: hasOverlap,
+    };
+  });
+
+  console.log(markedProcessData);
+  return markedProcessData;
+};
+
 const submitSchedule = async (req, res, next) => {
   try {
-    const t = await sequelize.transaction();
-
     const { link, startTime, endTime, attendeeName, attendeeEmail } = req.body;
 
     const [updatedRows, updatedSchedules] = await Promise.all([
@@ -553,32 +606,27 @@ const submitSchedule = async (req, res, next) => {
           finalEndTime: endTime,
         },
         {
-          where: { link, status: { [Op.not]: "done" } },
-          transaction: t,
+          where: { link },
         }
       ),
       Schedule.findAll({
         where: { link },
-        transaction: t,
       }),
     ]);
 
     if (updatedRows[0] === 0) {
       throw new Error("Schedule not found or already submitted");
     }
+    console.log(updatedRows);
+    console.log(updatedSchedules);
+    const newAttendee = await Attendee.create({
+      name: attendeeName,
+      email: attendeeEmail,
+      selectedStartTime: startTime,
+      selectedEndTime: endTime,
+      scheduleId: updatedSchedules[0].id,
+    });
 
-    const newAttendee = await Attendee.create(
-      {
-        name: attendeeName,
-        email: attendeeEmail,
-        selectedStartTime: startTime,
-        selectedEndTime: endTime,
-        scheduleId: updatedSchedules[0].id,
-      },
-      {
-        transaction: t,
-      }
-    );
     const schedule = await Schedule.findOne({
       where: { link },
       include: [
@@ -672,10 +720,46 @@ const getMySchedule = async (req, res, next) => {
     if (!userData) {
       return res.status(404).json({ message: "User not found" });
     }
-
     res.json(userData);
   } catch (error) {
     console.error("Error getting available time by link:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getOtherSchedule = async (req, res, next) => {
+  try {
+    const { email } = req.user;
+
+    const attendeeData = await Attendee.findAll({
+      where: { email },
+      include: [
+        {
+          model: Schedule,
+          as: "attendees",
+          attributes: [
+            "id",
+            "name",
+            "duration",
+            "finalDate",
+            "link",
+            "status",
+            "finalStartTime",
+            "finalEndTime",
+          ],
+        },
+      ],
+    });
+
+    if (attendeeData && attendeeData.length > 0) {
+      // Data found, return it
+      res.json(attendeeData);
+    } else {
+      // No data found
+      return res.status(404).json({ message: "Attendee not found" });
+    }
+  } catch (error) {
+    console.error("Error getting schedules by attendee:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -686,4 +770,5 @@ module.exports = {
   getAvailableTimeByLink,
   submitSchedule,
   getMySchedule,
+  getOtherSchedule,
 };

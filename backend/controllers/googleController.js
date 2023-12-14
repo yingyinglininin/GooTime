@@ -17,6 +17,8 @@ const calendar = google.calendar({
 });
 
 exports.login = (req, res) => {
+  req.session.loginSource = req.query.source;
+  req.session.link = req.query.link;
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: [
@@ -58,7 +60,18 @@ exports.oauthCallback = async (req, res) => {
 
     await createUser(req, res);
     await getCalendarLists(req, res);
+
+    const loginSource = req.session.loginSource;
+    const link = req.session.link;
+
     const { token } = req;
+
+    if (loginSource === "sharepage") {
+      res.redirect(
+        `https://${process.env.DOMAIN_NAME}/share/${link}?token=${token}`
+      );
+      // res.redirect(`http://localhost:3000/share/${link}?token=${token}`);
+    }
 
     res.redirect(`https://${process.env.DOMAIN_NAME}/home?token=${token}`);
     // res.redirect(`http://localhost:3000/home?token=${token}`);
@@ -76,9 +89,9 @@ const createUser = async (req, res) => {
       googleUserData
     );
 
-    const { token, user: userResponse } = response.data;
+    const { token, user } = response.data;
+    const { id } = user;
 
-    const { id } = userResponse.id;
     req.userId = id;
     req.token = token;
   } catch (error) {
@@ -119,26 +132,6 @@ const createCalendar = async (req, res) => {
 
       allCalendarData
     );
-    // const calendarIdsResponse = await axios.get(
-    //   `http://${process.env.DOMAIN_NAME}/api/${process.env.API_VERSION}/user/calendar?userId=85`
-    // );
-
-    // // Extract id values from the data
-    // const calendarIds = calendarIdsResponse.data.map((entry) =>
-    //   encodeURIComponent(entry.id)
-    // );
-
-    // console.log(JSON.stringify(calendarIds));
-
-    // return res.redirect(
-    //   `http://${
-    //     process.env.DOMAIN_NAME
-    //   }/api/auth/google/calendar/events?calendarIds=${JSON.stringify(
-    //     calendarIds
-    //   )}`
-    // );
-
-    // return res.status(200).json("Success");
   } catch (error) {
     console.error("[Error] post createUserCalendarList api", error);
   }

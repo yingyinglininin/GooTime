@@ -7,16 +7,13 @@ import {
   OtherScheduleTab,
 } from "../components/Home";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useNavigate } from "react-router-dom"; // Make sure to import useNavigate
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("mySchedule");
   const [urlToken, setUrlToken] = useState(null);
 
-  console.log(userData);
   useEffect(() => {
     const checkToken = async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -55,21 +52,6 @@ const HomePage = () => {
       localStorage.setItem("userInfo", JSON.stringify(response.data));
     } catch (error) {
       console.error("Error fetching user data:", error);
-
-      // if (error.response && error.response.status === 401) {
-      //   // Token expired or invalid, try refreshing the token
-      //   const refreshedToken = await refreshToken(); // Implement refreshToken function
-      //   if (refreshedToken) {
-      //     // If refresh is successful, retry fetching data
-      //     await fetchData(refreshedToken);
-      //   } else {
-      //     // If refresh fails, navigate to login page
-      //     navigate("/");
-      //   }
-      // } else {
-      //   // Other errors, navigate to login page
-      //   navigate("/");
-      // }
     }
   };
   return (
@@ -86,7 +68,7 @@ const HomePage = () => {
             } flex-1 px-4 py-2 rounded duration-300 hover:shadow-xl opacity-100`}
             onClick={() => setSelectedTab("mySchedule")}
           >
-            My Schedule
+            My Events
           </button>
           <button
             className={`${
@@ -96,7 +78,7 @@ const HomePage = () => {
             } flex-1 px-4 py-2 rounded duration-300 hover:shadow-xl opacity-100`}
             onClick={() => setSelectedTab("otherSchedule")}
           >
-            Other Schedule
+            Friend Events
           </button>
         </div>
       </div>

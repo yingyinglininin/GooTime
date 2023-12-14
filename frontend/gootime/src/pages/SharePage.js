@@ -8,6 +8,8 @@ import {
   ReserveCalendar,
   TimeButtonGroup,
   Footer,
+  LoginModal,
+  LoadingSkeleton,
 } from "../components/Share";
 import Swal from "sweetalert2";
 import { IoMdArrowRoundBack } from "react-icons/io";
@@ -23,37 +25,82 @@ const SharePage = () => {
   const [scheduleData, setScheduleData] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); // To track whether submission is in progress
-  const [attendeeName, setAttendeeName] = useState(null);
-  const [attendeeEmail, setAttendeeEmail] = useState(null);
-
-  useEffect(() => {
-    // Fetch available time data based on the link
-    const fetchAvailableTime = async () => {
-      try {
-        const response = await axios.get(
-          `https://www.gootimetw.com/api/1.0.0/schedule/available/${link}`
-        );
-        console.log(response.data);
-
-        setScheduleData(response.data);
-
-        // Assuming that the API response structure includes an `availableTimes` property
-        setAvailableTimes(response.data.timeSlots);
-      } catch (error) {
-        console.error("Error fetching available time:", error);
-      }
-    };
-
-    fetchAvailableTime();
-  }, [link]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [urlToken, setUrlToken] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Update available times for the selected day when selectedDateTime changes
     const timesForSelectedDay = availableTimes.filter((time) =>
-      dayjs(time.start).isSame(selectedDateTime, "day")
+      dayjs(time.startTime).isSame(selectedDateTime, "day")
     );
     setAvailableTimesForSelectedDay(timesForSelectedDay);
   }, [selectedDateTime, availableTimes]);
+
+  // Fetch available time data based on the link and optional token
+  const fetchAvailableTime = async (tokenToUse = "") => {
+    try {
+      const response = await axios.get(
+        // `http://localhost:4000/api/1.0.0/schedule/available/${link}?token=${tokenToUse}`
+        `https://www.gootimetw.com/api/1.0.0/schedule/available/${link}?token=${tokenToUse}`
+      );
+
+      setScheduleData(response.data);
+      setAvailableTimes(response.data.timeSlots);
+    } catch (error) {
+      console.error("Error fetching available time:", error);
+    }
+  };
+
+  const fetchUserInfo = async (token) => {
+    try {
+      const response = await axios.get(
+        "https://www.gootimetw.com/api/1.0.0/user/name",
+        // "http://localhost:4000/api/1.0.0/user/name",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUserData(response.data);
+      localStorage.setItem("userInfo", JSON.stringify(response.data));
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const checkToken = async () => {
+      setIsLoading(true);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get("token");
+      const storedToken = localStorage.getItem("authToken");
+      const tokenToUse = storedToken || tokenFromUrl;
+
+      if (window.location.pathname.startsWith("/share")) {
+        if (tokenToUse) {
+          await fetchAvailableTime(tokenToUse);
+          setUrlToken(tokenToUse);
+          localStorage.setItem("authToken", tokenToUse);
+          await fetchUserInfo(tokenToUse);
+          setShowLoginModal(false);
+        } else {
+          await fetchAvailableTime();
+          setShowLoginModal(true);
+        }
+      } else {
+        setShowLoginModal(false);
+        await fetchAvailableTime();
+      }
+
+      setIsLoading(false);
+    };
+
+    checkToken();
+  }, []);
 
   const handleTimeSelect = (dateTime) => {
     setSelectedDateTime(dateTime);
@@ -61,44 +108,6 @@ const SharePage = () => {
 
   const handleTimeSlotSelect = (dateTime) => {
     setSelectedTimeSlot(dateTime);
-  };
-
-  const openPopupModal = async () => {
-    const { value: formValues } = await Swal.fire({
-      title: "Enter your information",
-      html: `
-        <input id="swal-input-name" class="swal2-input" placeholder="Your Name">
-        <input id="swal-input-email" class="swal2-input" placeholder="Your Email" type="email">
-      `,
-      focusConfirm: false,
-      preConfirm: () => {
-        const name = document.getElementById("swal-input-name").value;
-        const email = document.getElementById("swal-input-email").value;
-
-        // Email validation regex
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!name || !email || !emailRegex.test(email)) {
-          Swal.showValidationMessage(
-            "Please enter a valid name and email address"
-          );
-          return false; // Returning false prevents the modal from closing
-        }
-
-        // Return values if both name and valid email are provided
-        return [name, email];
-      },
-    });
-
-    if (formValues) {
-      const [name, email] = formValues;
-      // Update state variables or take other actions with the obtained form values
-      setAttendeeName(name);
-      setAttendeeEmail(email);
-    } else {
-      // Handle dismissal or if the user didn't provide valid input
-      console.log("Form not submitted");
-    }
   };
 
   const handleShare = () => {
@@ -142,10 +151,44 @@ const SharePage = () => {
   };
 
   const handleSubmit = async () => {
-    // Open the pop-up modal to get attendee information
-    await openPopupModal();
+    const storedUserInfo = localStorage.getItem("userInfo");
 
-    // Continue with the rest of the handleSubmit logic
+    let name, email;
+
+    if (storedUserInfo) {
+      const userInfo = JSON.parse(storedUserInfo);
+      name = userInfo.name;
+      email = userInfo.email;
+    } else {
+      const { value: formValues } = await Swal.fire({
+        title: "Enter your information",
+        html: `
+          <input id="swal-input-name" class="swal2-input" placeholder="Your name">
+          <input id="swal-input-email" class="swal2-input" placeholder="Your email" type="email">
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+          name = document.getElementById("swal-input-name").value;
+          email = document.getElementById("swal-input-email").value;
+
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+          if (!name || !email || !emailRegex.test(email)) {
+            Swal.showValidationMessage(
+              "Please enter a valid name and email address"
+            );
+            return false; // Returning false prevents the modal from closing
+          }
+          return [name, email];
+        },
+      });
+
+      if (!formValues) {
+        console.log("Form not submitted");
+        return;
+      }
+    }
+
     try {
       setIsSubmitting(true);
       const endTime = addMinutes(
@@ -153,45 +196,57 @@ const SharePage = () => {
         scheduleData?.duration
       );
 
-      // Assuming you have an API endpoint to handle the submission
       const response = await axios.post(
         "https://www.gootimetw.com/api/1.0.0/schedule/submit",
+        // "http://localhost:4000/api/1.0.0/schedule/submit",
         {
           link,
           startTime: format(new Date(selectedTimeSlot), "yyyy-MM-dd HH:mm:ss"),
           endTime: format(endTime, "yyyy-MM-dd HH:mm:ss"),
-          attendeeName,
-          attendeeEmail,
+          attendeeName: name,
+          attendeeEmail: email,
         }
       );
       console.log("google calendar reservation link:", response.data);
       Swal.fire({
         icon: "success",
-        title: "時間預約成功",
+        title: "Success",
       });
     } catch (error) {
       console.error("Error submitting time slot:", error);
       Swal.fire({
         icon: "error",
-        title: "時間預約失敗",
+        title: "Failed",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div id="share-page" className="flex flex-col items-center p-4 pt-12 pb-16">
+  useEffect(() => {
+    if (showLoginModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "visible";
+    }
+
+    return () => {
+      document.body.style.overflow = "visible";
+    };
+  }, [showLoginModal]);
+
+  return isLoading ? (
+    <LoadingSkeleton isLoading={isLoading} />
+  ) : (
+    <div id="share-page" className="flex flex-col items-center p-4 pt-12 pb-20">
       <UserInformation user={scheduleData?.user} />
-      <span className="text-xl mb-2">
-        {scheduleData?.name || "Unknown Event"}
-      </span>
+      <span className="text-xl mb-2">{scheduleData?.name || ""}</span>
       <TimeDisplay duration={scheduleData?.duration} />
       <ReserveCalendar
         onTimeSelect={handleTimeSelect}
         availableTimes={availableTimes}
       />
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center pb-2">
         {availableTimesForSelectedDay.length === 0 ? (
           <p>No available times for the selected day.</p>
         ) : (
@@ -214,6 +269,9 @@ const SharePage = () => {
             size={50}
           />
         </Link>
+      )}
+      {window.location.pathname.startsWith("/share") && showLoginModal && (
+        <LoginModal link={link} onClose={() => setShowLoginModal(false)} />
       )}
     </div>
   );

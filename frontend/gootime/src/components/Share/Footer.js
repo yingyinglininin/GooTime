@@ -17,7 +17,7 @@ const Footer = ({
       </button>
     ) : (
       selectedTimeSlot && (
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 pb-4 pt-2">
           <p>{`Selected Time: ${new Date(
             selectedTimeSlot
           ).toLocaleString()}`}</p>

@@ -7,7 +7,11 @@ import { IoTime } from "react-icons/io5";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-const ScheduleItem = ({ schedule }) => (
+// "https://www.gootimetw.com/"
+// "http://localhost:3000/"
+const commonLink = "https://www.gootimetw.com/";
+
+const ScheduleItem = ({ schedule, isMySchedule }) => (
   <div className="border border-main-gray bg-white shadow-lg rounded-2xl p-4 mb-4 relative">
     <p className="text-xl font-bold mb-2">{schedule.name}</p>
     <div className="flex justify-between items-center mb-2 mr-24">
@@ -48,7 +52,11 @@ const ScheduleItem = ({ schedule }) => (
       <div className="absolute top-0 right-1/4 h-full border-r border-dashed border-main-gray border-opacity-50"></div>
       {/* Circle */}
       <div className="absolute right-0 transform -translate-x-1/2 translate-y-1/2 mb-10">
-        <Link to={`https://www.gootimetw.com/preview/${schedule.link}`}>
+        <Link
+          to={`${commonLink}${isMySchedule ? "preview" : "share"}/${
+            schedule.link
+          }`}
+        >
           {/* Replace with your actual link */}
           <IoIosArrowDroprightCircle
             className="text-main-gray cursor-pointer hover:text-main-yellow"

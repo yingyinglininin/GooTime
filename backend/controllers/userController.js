@@ -73,6 +73,7 @@ exports.createUserCalendarList = async (req, res, next) => {
 
     return res.status(200).json("Success");
   } catch (error) {
+    console.error("[Error] create calendar list", error);
     next(new Error("[Error] create calendar list"));
   }
 };

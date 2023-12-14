@@ -18,4 +18,11 @@ router
     scheduleController.getMySchedule
   );
 
+router
+  .route("/otherSchedule")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    scheduleController.getOtherSchedule
+  );
+
 module.exports = router;

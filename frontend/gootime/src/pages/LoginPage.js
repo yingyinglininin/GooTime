@@ -13,7 +13,7 @@ const LoginPage = () => {
         customStyle="shadow-xl hover:shadow-2xl rounded-full bg-white p-1"
       />
       <p className="mt-6 text-2xl">Sign in</p>
-      <GoogleLogin />
+      <GoogleLogin isModal={false} />
     </div>
   );
 };
