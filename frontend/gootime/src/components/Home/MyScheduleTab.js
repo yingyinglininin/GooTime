@@ -32,7 +32,11 @@ const MyScheduleTab = ({ token }) => {
         <LoadingSpinner />
       ) : (
         mySchedule.map((schedule) => (
-          <ScheduleItem key={schedule.id} schedule={schedule} />
+          <ScheduleItem
+            key={schedule.id}
+            schedule={schedule}
+            isMySchedule={true}
+          />
         ))
       )}
     </div>

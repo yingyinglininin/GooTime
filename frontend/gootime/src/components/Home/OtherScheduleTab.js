@@ -11,12 +11,16 @@ const OtherScheduleTab = ({ token }) => {
     // Fetch other schedule data from the API using Axios
     axios
       .get("https://www.gootimetw.com/api/1.0.0/schedule/otherSchedule", {
+        // .get("http://localhost:4000/api/1.0.0/schedule/otherSchedule", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        setOtherSchedule(response.data.otherSchedules);
+        const attendeesDataArray = response.data.map(
+          (element) => element.attendees
+        );
+        setOtherSchedule(attendeesDataArray);
         setLoading(false);
       })
       .catch((error) => {
@@ -31,7 +35,11 @@ const OtherScheduleTab = ({ token }) => {
         <LoadingSpinner />
       ) : (
         otherSchedule.map((schedule) => (
-          <ScheduleItem key={schedule.id} schedule={schedule} />
+          <ScheduleItem
+            key={schedule.id}
+            schedule={schedule}
+            isMySchedule={false}
+          />
         ))
       )}
     </div>

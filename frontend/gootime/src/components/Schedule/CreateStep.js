@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DigitalClock, MultiSectionDigitalClock } from "@mui/x-date-pickers";
+import { DigitalClock } from "@mui/x-date-pickers";
 import PreferenceCheckbox from "./PreferenceCheckbox";
 import ScheduleSelector from "./ScheduleSelector";
 import LoadingSpinner from "../LoadingSpinner";

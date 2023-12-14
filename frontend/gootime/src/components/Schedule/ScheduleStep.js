@@ -38,21 +38,25 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
     const container = document.querySelector(".Tx");
     const dayItems = container.querySelectorAll("._3n");
 
+    const addedDates = new Set();
+
     storedEvents.availableTimes.forEach((time) => {
       const startDate = new Date(time.start);
-      const endDate = new Date(time.end);
 
       dayItems.forEach((dayItem) => {
         const dateLabel = dayItem.querySelector("._1g");
 
         if (dateLabel) {
-          const day = parseInt(dateLabel.textContent, 10) + 1;
+          const day = parseInt(dateLabel.textContent, 10);
           const month = startDate.getMonth();
           const year = startDate.getFullYear();
 
           const currentDate = new Date(year, month, day);
 
-          if (currentDate >= startDate && currentDate <= endDate) {
+          if (
+            currentDate.toDateString() === startDate.toDateString() &&
+            !addedDates.has(currentDate.toDateString())
+          ) {
             // Check if the pseudo-element is already added to avoid duplication
             if (!dayItem.classList.contains("has-available-times")) {
               // Add the class to the _3n element itself
@@ -63,11 +67,13 @@ const ScheduleStep = ({ onShareLinkChange, onNextStep }) => {
 
               // Insert the pseudo-element as the first child of _3n
               dayItem.insertBefore(beforeElement, dayItem.firstChild);
+              addedDates.add(currentDate.toDateString());
             }
           }
         }
       });
     });
+
     const uniqueEvents = new Set();
 
     const createEvent = (eventData, editable = true) => ({

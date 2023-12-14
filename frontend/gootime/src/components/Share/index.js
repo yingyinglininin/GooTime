@@ -4,6 +4,8 @@ import ReserveCalendar from "./ReserveCalendar";
 import TimeButton from "./TimeButton";
 import TimeButtonGroup from "./TimeButtonGroup";
 import Footer from "./Footer";
+import LoginModal from "./LoginModal";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 export {
   UserInformation,
@@ -12,4 +14,6 @@ export {
   TimeButton,
   TimeButtonGroup,
   Footer,
+  LoginModal,
+  LoadingSkeleton,
 };

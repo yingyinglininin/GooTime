@@ -10,7 +10,7 @@ const TimeButtonGroup = ({
 
   const handleButtonClick = (time) => {
     setSelectedButtons([time]);
-    handleTimeSelect(dayjs(time.start).toDate());
+    handleTimeSelect(dayjs(time.startTime).toDate());
   };
 
   const morningButtons = [];
@@ -18,7 +18,7 @@ const TimeButtonGroup = ({
   const eveningButtons = [];
 
   availableTimesForSelectedDay.forEach((time, index) => {
-    const startHour = dayjs(time.start).hour();
+    const startHour = dayjs(time.startTime).hour();
 
     const button = (
       <TimeButton

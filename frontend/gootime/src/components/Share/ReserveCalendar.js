@@ -40,7 +40,7 @@ export default function ReserveCalendar({ onTimeSelect, availableTimes }) {
   const fetchHighlightedDays = (availableTimes) => {
     try {
       const daysToHighlight = availableTimes.map((time) =>
-        dayjs(time.start).date()
+        dayjs(time.startTime).date()
       );
 
       setHighlightedDays(daysToHighlight);

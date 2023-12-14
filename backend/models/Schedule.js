@@ -49,7 +49,7 @@ Schedule.hasMany(TimeSlot, { as: "timeSlots", foreignKey: "scheduleId" });
 TimeSlot.belongsTo(Schedule, { foreignKey: "scheduleId" });
 
 Schedule.hasMany(Attendee, { as: "attendees", foreignKey: "scheduleId" });
-Attendee.belongsTo(Schedule, { foreignKey: "scheduleId" });
+Attendee.belongsTo(Schedule, { foreignKey: "scheduleId", as: "attendees" });
 
 Schedule.sync();
 
